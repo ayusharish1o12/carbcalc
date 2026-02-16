@@ -246,6 +246,20 @@ function ActiveInsulinBanner({ history }) {
   );
 }
 
+// ─── Profile field input — defined OUTSIDE ProfileSetup to prevent focus loss ──
+function ProfileInp({ label, k, ph, hint, type = "number", value, onChange }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</div>
+      {hint && <div style={{ fontSize: 11, color: "#334155", marginBottom: 5 }}>{hint}</div>}
+      <input type={type} value={value} onChange={onChange} placeholder={ph}
+        style={{ width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: "12px 14px", color: "#e2e8f0", fontSize: 16, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+        onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#1e293b"}
+      />
+    </div>
+  );
+}
+
 // ─── Profile Setup ─────────────────────────────────────────────────────────────
 function ProfileSetup({ onSave, existing }) {
   const [form, setForm] = useState(existing ? {
@@ -266,17 +280,6 @@ function ProfileSetup({ onSave, existing }) {
     onSave(profile);
   };
 
-  const Inp = ({ label, k, ph, hint, type = "number" }) => (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</div>
-      {hint && <div style={{ fontSize: 11, color: "#334155", marginBottom: 5 }}>{hint}</div>}
-      <input type={type} value={form[k]} onChange={e => upd(k, e.target.value)} placeholder={ph}
-        style={{ width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: "12px 14px", color: "#e2e8f0", fontSize: 16, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
-        onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#1e293b"}
-      />
-    </div>
-  );
-
   return (
     <div style={{ minHeight: "100vh", background: "#0a0e1a", backgroundImage: "radial-gradient(ellipse at 20% 50%,rgba(0,180,150,0.07) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(99,102,241,0.08) 0%,transparent 50%)", fontFamily: "'DM Mono','Fira Code','Courier New',monospace", color: "#e2e8f0", display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div style={{ width: "100%", maxWidth: 520, padding: "28px 24px 40px", boxSizing: "border-box" }}>
@@ -291,8 +294,8 @@ function ProfileSetup({ onSave, existing }) {
         <div style={{ background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 12, padding: "14px 16px", marginBottom: 24, fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
           ℹ️ Saved only on your device. Your data never leaves your browser.
         </div>
-        <Inp label="Your name" k="name" ph="e.g. Ash" type="text" />
-        <Inp label="Total Daily Dose — TDD (units)" k="tdd" ph="e.g. 36" hint="Total insulin per day (basal + bolus combined)" />
+        <ProfileInp label="Your name" k="name" ph="e.g. Ash" type="text" value={form.name} onChange={e => upd("name", e.target.value)} />
+        <ProfileInp label="Total Daily Dose — TDD (units)" k="tdd" ph="e.g. 36" hint="Total insulin per day (basal + bolus combined)" value={form.tdd} onChange={e => upd("tdd", e.target.value)} />
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.08em", textTransform: "uppercase" }}>Insulin-to-Carb Ratio (I:C)</div>
           <div style={{ fontSize: 11, color: "#334155", marginBottom: 10 }}>How many grams of carbs does 1 unit cover?</div>
@@ -326,8 +329,8 @@ function ProfileSetup({ onSave, existing }) {
             </div>
           )}
         </div>
-        <Inp label="Target Blood Glucose (mg/dL)" k="target" ph="110" />
-        <Inp label="Pre-bolus time (minutes)" k="prebolus" ph="15" hint="How many minutes before eating do you inject?" />
+        <ProfileInp label="Target Blood Glucose (mg/dL)" k="target" ph="110" value={form.target} onChange={e => upd("target", e.target.value)} />
+        <ProfileInp label="Pre-bolus time (minutes)" k="prebolus" ph="15" hint="How many minutes before eating do you inject?" value={form.prebolus} onChange={e => upd("prebolus", e.target.value)} />
         {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 12 }}>{error}</div>}
         <button onClick={save} style={{ width: "100%", padding: "16px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#00b896,#6366f1)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
           Save & Start →
