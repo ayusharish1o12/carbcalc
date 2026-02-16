@@ -246,6 +246,28 @@ function ActiveInsulinBanner({ history }) {
   );
 }
 
+// ─── Tooltip popup ────────────────────────────────────────────────────────────
+function Tooltip({ content }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span style={{ position: "relative", display: "inline-block", verticalAlign: "middle", marginLeft: 6 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ background: "none", border: "1px solid #334155", borderRadius: "50%", width: 16, height: 16, color: "#475569", fontSize: 10, cursor: "pointer", lineHeight: 1, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}
+      >ⓘ</button>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 98 }} />
+          <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", zIndex: 99, background: "#1e293b", border: "1px solid #334155", borderRadius: 10, padding: "12px 14px", width: 260, fontSize: 12, color: "#94a3b8", lineHeight: 1.7, boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}>
+            <div onClick={() => setOpen(false)} style={{ float: "right", cursor: "pointer", color: "#475569", marginLeft: 8 }}>✕</div>
+            {content}
+          </div>
+        </>
+      )}
+    </span>
+  );
+}
+
 // ─── Profile field input — defined OUTSIDE ProfileSetup to prevent focus loss ──
 function ProfileInp({ label, k, ph, hint, type = "number", value, onChange }) {
   return (
@@ -295,9 +317,22 @@ function ProfileSetup({ onSave, existing }) {
           ℹ️ Saved only on your device. Your data never leaves your browser.
         </div>
         <ProfileInp label="Your name" k="name" ph="e.g. Ash" type="text" value={form.name} onChange={e => upd("name", e.target.value)} />
-        <ProfileInp label="Total Daily Dose — TDD (units)" k="tdd" ph="e.g. 36" hint="Total insulin per day (basal + bolus combined)" value={form.tdd} onChange={e => upd("tdd", e.target.value)} />
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.08em", textTransform: "uppercase" }}>Insulin-to-Carb Ratio (I:C)</div>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Total Daily Dose — TDD (units)
+            <Tooltip content={<><strong style={{ color: "#e2e8f0" }}>Total Daily Dose (TDD)</strong> is the total amount of insulin you inject in a day — basal (background) + bolus (mealtime) combined.<br /><br />Example: if you take 18u of Glargine at night and roughly 18u of NovoRapid across meals, your TDD is 36u.<br /><br />Your doctor or diabetes team will have given you this number. If unsure, check your prescription or logbook.</>} />
+          </div>
+          <input type="number" inputMode="decimal" value={form.tdd} onChange={e => upd("tdd", e.target.value)} placeholder="e.g. 36"
+            style={{ width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: "12px 14px", color: "#e2e8f0", fontSize: 16, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+            onFocus={e => { e.target.style.borderColor = "#6366f1"; e.target.scrollIntoView({ behavior: "smooth", block: "center" }); }}
+            onBlur={e => e.target.style.borderColor = "#1e293b"}
+          />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Insulin-to-Carb Ratio (I:C)
+            <Tooltip content={<><strong style={{ color: "#e2e8f0" }}>Insulin-to-Carb Ratio (I:C)</strong> tells you how many grams of carbohydrates 1 unit of insulin will cover.<br /><br />Example: a ratio of 1:13 means 1 unit covers 13g of carbs. So if your meal has 52g of carbs, you'd take 4 units.<br /><br />Your doctor sets this. Some people need different ratios for breakfast vs dinner — dawn hormones make mornings harder to control.</>} />
+          </div>
           <div style={{ fontSize: 11, color: "#334155", marginBottom: 10 }}>How many grams of carbs does 1 unit cover?</div>
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
             {[true, false].map(v => (
@@ -309,9 +344,9 @@ function ProfileSetup({ onSave, existing }) {
           {sameICR ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 13, color: "#64748b" }}>1 unit covers</span>
-              <input type="number" value={form.icr_breakfast} onChange={e => upd("icr_breakfast", e.target.value)} placeholder="13"
+              <input type="number" inputMode="decimal" value={form.icr_breakfast} onChange={e => upd("icr_breakfast", e.target.value)} placeholder="13"
                 style={{ width: 70, background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, padding: "10px", color: "#00b896", fontSize: 16, fontFamily: "inherit", outline: "none", textAlign: "center" }}
-                onFocus={e => e.target.style.borderColor = "#00b896"} onBlur={e => e.target.style.borderColor = "#1e293b"}
+                onFocus={e => { e.target.style.borderColor = "#00b896"; e.target.scrollIntoView({ behavior: "smooth", block: "center" }); }} onBlur={e => e.target.style.borderColor = "#1e293b"}
               />
               <span style={{ fontSize: 13, color: "#64748b" }}>g of carbs</span>
             </div>
@@ -320,9 +355,9 @@ function ProfileSetup({ onSave, existing }) {
               {[["Breakfast", "icr_breakfast"], ["Lunch", "icr_lunch"], ["Dinner", "icr_dinner"], ["Snack", "icr_snack"]].map(([label, key]) => (
                 <div key={key}>
                   <div style={{ fontSize: 10, color: "#475569", marginBottom: 4 }}>{label}</div>
-                  <input type="number" value={form[key]} onChange={e => upd(key, e.target.value)} placeholder="13"
+                  <input type="number" inputMode="decimal" value={form[key]} onChange={e => upd(key, e.target.value)} placeholder="13"
                     style={{ width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, padding: "9px", color: "#00b896", fontSize: 15, fontFamily: "inherit", outline: "none", textAlign: "center", boxSizing: "border-box" }}
-                    onFocus={e => e.target.style.borderColor = "#00b896"} onBlur={e => e.target.style.borderColor = "#1e293b"}
+                    onFocus={e => { e.target.style.borderColor = "#00b896"; e.target.scrollIntoView({ behavior: "smooth", block: "center" }); }} onBlur={e => e.target.style.borderColor = "#1e293b"}
                   />
                 </div>
               ))}
@@ -460,8 +495,12 @@ export default function App() {
       profile: profile.name,
     };
     setResult(res);
+    setStep("confirm"); // go to confirm screen first
+  };
+
+  const confirm = () => {
+    saveHistory(result);
     setStep("result");
-    saveHistory(res);
   };
 
   const reset = () => {
@@ -670,9 +709,9 @@ export default function App() {
 
                 <div style={{ marginBottom: 20 }}>
                   <div style={L()}>Current Blood Glucose (mg/dL)</div>
-                  <input type="number" min="40" max="500" value={currentBG} onChange={e => setCurrentBG(e.target.value)} placeholder="e.g. 140"
+                  <input type="number" inputMode="decimal" min="40" max="500" value={currentBG} onChange={e => setCurrentBG(e.target.value)} placeholder="e.g. 140"
                     style={{ width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, padding: "14px 16px", color: "#e2e8f0", fontSize: 20, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
-                    onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#1e293b"}
+                    onFocus={e => { e.target.style.borderColor = "#6366f1"; e.target.scrollIntoView({ behavior: "smooth", block: "center" }); }} onBlur={e => e.target.style.borderColor = "#1e293b"}
                   />
                   {currentBG && (
                     <div style={{ marginTop: 6, fontSize: 11, color: parseFloat(currentBG) < 70 ? "#ef4444" : parseFloat(currentBG) > 180 ? "#f59e0b" : "#22c55e" }}>
@@ -684,6 +723,34 @@ export default function App() {
                 <button onClick={calculate} disabled={!currentBG || totalCarbs === 0} style={{ width: "100%", padding: "16px", borderRadius: 12, border: "none", background: (!currentBG || totalCarbs === 0) ? "#1e293b" : "linear-gradient(135deg,#00b896,#6366f1)", color: (!currentBG || totalCarbs === 0) ? "#334155" : "#fff", fontSize: 15, fontWeight: 700, cursor: (!currentBG || totalCarbs === 0) ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: "0.05em", transition: "all 0.2s" }}>
                   CALCULATE DOSE →
                 </button>
+              </div>
+            )}
+
+            {step === "confirm" && result && (
+              <div>
+                <div style={{ background: "#0f172a", borderRadius: 16, border: "1px solid #1e293b", padding: "32px 24px", marginBottom: 16, textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: "#64748b", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 6 }}>Calculated dose</div>
+                  <div style={{ fontSize: 80, fontWeight: 700, color: "#00b896", lineHeight: 1, letterSpacing: "-3px" }}>{result.totalDose}</div>
+                  <div style={{ fontSize: 16, color: "#64748b", marginTop: 4, marginBottom: 20 }}>units of NovoRapid</div>
+                  <div style={{ display: "flex", gap: 10, fontSize: 12, justifyContent: "center", marginBottom: 24 }}>
+                    <span style={{ background: "#1e293b", borderRadius: 8, padding: "6px 12px", color: "#94a3b8" }}>{result.totalCarbs}g carbs</span>
+                    <span style={{ background: "#1e293b", borderRadius: 8, padding: "6px 12px", color: "#94a3b8" }}>BG {result.bg} mg/dL</span>
+                    <span style={{ background: "#1e293b", borderRadius: 8, padding: "6px 12px", color: "#94a3b8" }}>1:{result.icr} ratio</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#475569", marginBottom: 20, lineHeight: 1.6 }}>
+                    Please double-check this dose before injecting.<br />
+                    <span style={{ color: "#334155" }}>Tap confirm when ready.</span>
+                  </div>
+                  <button onClick={confirm} style={{ width: "100%", padding: "16px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#00b896,#6366f1)", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: "0.05em", marginBottom: 10 }}>
+                    ✓ Confirm & inject {result.totalDose}u
+                  </button>
+                  <button onClick={reset} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid #1e293b", background: "transparent", color: "#475569", fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+                    ← Go back & recalculate
+                  </button>
+                </div>
+                <div style={{ fontSize: 11, color: "#334155", textAlign: "center", lineHeight: 1.6 }}>
+                  ⚠️ Estimates only. Always verify with your diabetes care team.
+                </div>
               </div>
             )}
 
